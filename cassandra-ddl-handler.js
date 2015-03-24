@@ -39,11 +39,11 @@ function CassandraDDLHandler(){
 									this.columns.forEach(function(c) {
 										if (retString != '')
 											retString += ',';
-										retString += c.column;
+										retString += c.name;
 									});
 									return retString;
 							  	},
-								insertValues : 'false,{},1'
+								insertValues : "false,'',1"
 							}; 
 	
 	this.insertTable4Metadata=function(cql){

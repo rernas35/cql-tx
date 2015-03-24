@@ -46,7 +46,7 @@ function CassandraDMLHandler(){
 				valueClause += ',';
 			valueClause += c.value;
 		}
-		this.execute('insert into ' + statement.table + '(' + columnClause + ',' + cassandraDDLHandler.getInstance().transactionColumns.getColumnString() + 
+		this.execute('insert into tx_' + statement.table + '(' + columnClause + ',' + cassandraDDLHandler.getInstance().transactionColumns.getColumnString() + 
 				') values(' + valueClause + ',' + cassandraDDLHandler.getInstance().transactionColumns.insertValues + ',' + txId +')',
 				[],
 				statement,
@@ -73,11 +73,11 @@ module.exports = {
 			CassandraDMLHandler.prototype = cassandraBase.getInstance();
 			var handler = new CassandraDMLHandler();
 			return {
-				executeTransactional : function(cql){
+				executeTransactional : function(cql,txId){
 					if (sqlStrUtility.SqlStrUtility().isUpdate(cql)){
-						handler.updateTransactional(cql);
+						handler.updateTransactional(cql,txId);
 					}else if (sqlStrUtility.SqlStrUtility().isInsert(cql)){
-						handler.insertTransactional(cql);
+						handler.insertTransactional(cql,txId);
 					} 
 					
 				}

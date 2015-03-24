@@ -9,5 +9,5 @@ var dmlHandler = require('./cassandra-dml-handler');
 
 //ddlHandler.getInstance().process4Metadata('update users set fname=12 where lname=23');
 
-dmlHandler.getInstance().executeTransactional("insert into users(fname,lname) values('342','234')");
+dmlHandler.getInstance().executeTransactional("insert into users(user_id,fname,lname) values(72,'342','234')",'uuid()');
 
