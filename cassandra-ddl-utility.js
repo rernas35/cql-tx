@@ -19,6 +19,32 @@ function CassandraDDLHandler(){
 	var client = new cassandra.Client({contactPoints: ['127.0.0.1'], keyspace: 'mykeyspace'});
 	var txCache = new NodeCache( { stdTTL: 100, checkperiod: 120 } );
 	
+	var additionalColumns = {  columns : [{name:'is_removed',type:'boolean'},
+	                                    {name:'changeset', type:'set'},
+	                                    {name:'action', type :'int' }],// insert:1 | update:2 | delete:3
+	                                    
+	                           generateAddtionalColumnsDDL:function(){
+									var additionalColumnDDLPart = '';
+									for (var i=0; i<this.columns.length; i++){
+										var c = this.columns[i];
+										if (additionalColumnDDLPart != '')
+											additionalColumnDDLPart += ',';
+										additionalColumnDDLPart += c.name + ' ' + c.type;
+									}
+									return additionalColumnDDLPart;
+								},
+								getColumnString : function(){
+									var retString = '';
+									this.columns.forEach(function(c) {
+										if (retString != '')
+											retString += ',';
+										retString += c.column;
+									});
+									return retString;
+							  	},
+								insertValues : 'false,{},1'
+							}; 
+	
 	function prepareStatement(cql,parameters){
 		for(var i = 0 ; i < parameters.length;i++){
 			cql = cql.replace('?', parameters[i]);
@@ -52,7 +78,7 @@ function CassandraDDLHandler(){
 	function addTable2TransactionalContext(statement){
 		
 		execute('insert into TX_TABLES(table_id,creation_date,table_name, status) values(uuid(),dateof(now()),\'?\',?)',
-				[statement.table,1],statement,callback4Insert);
+				[statement.table,1],statement,dummyCallback);
 		
 		logger.debug("Retrieving metadata for " + statement.table);
 		execute("SELECT * FROM system.schema_columns where keyspace_name = 'mykeyspace' and columnfamily_name = '"+ statement.table +"'",
@@ -88,11 +114,11 @@ function CassandraDDLHandler(){
 		}
 		primaryKeyClause += ')'; 
 	
-		execute('create table tx_'+ statement.table +'('+columnsClause + primaryKeyClause +');',
+		execute('create table tx_'+ statement.table +'('+columnsClause + additionalColumns.generateAddtionalColumnsDDL() + ',' + primaryKeyClause +');',
 				[],statement,callBack4CreateTable);
 		
 	}
-	//buradaki rows create table'in rows'
+	
 	function callBack4CreateTable(rows,statement){
 		logger.debug("Retrieving indexes " + statement.table);
 		execute("SELECT * FROM system.schema_columns where keyspace_name = 'mykeyspace' and columnfamily_name = '"+ statement.table +"'",
@@ -117,14 +143,14 @@ function CassandraDDLHandler(){
 			logger.info('c.index_name : ' + c.index_name);
 			if (c.index_name != null){
 				logger.debug('Creating index for ' + c.column_name + " on table " + statement.table );
-				execute("create index tx_idx_" + c.column_name + " on tx_" + statement.table + "(" + c.column_name + ")",[],statement,callback4Insert);
+				execute("create index tx_idx_" + c.column_name + " on tx_" + statement.table + "(" + c.column_name + ")",[],statement,dummyCallback);
 				logger.debug('Created index for ' + c.column_name + " on table " + statement.table );
 			}
 			
 		});
 	}
 	
-	function callback4Insert(rows,statement){	
+	function dummyCallback(rows,statement){	
 		logger.debug("Dummy return from Cassandra");
 	}
 	
@@ -148,6 +174,41 @@ function CassandraDDLHandler(){
 		var insertStatement = sqlStrUtility.SqlStrUtility().getUpdateStatement(cql);
 		checkTableExists(insertStatement);
 	}
+
+	
+	function updateTransactional(cql){
+		//TODO : update transactional must be implemented.
+	}
+	
+	function insertTransactional(cql){
+		
+		
+		
+	}
+	
+	function insertTxRecord(statement){
+		logger.debug('inserting tx record on table ' + statement.table);
+		var columnClause = '';
+		var valueClause = '';
+		for (var i=0; i<statement.columns.length;i++){
+			var c = statement.columns[i];
+			if (columnClause != '')
+				columnClause += ',';
+			columnStatement += c.column;
+			if (valueClause != '')
+				valueClause += ',';
+			valueStatement += c.value;
+		}
+		execute('insert into ' + statement.table + '(' + columnClause + ',' + additionalColumns.getColumnString() + ' values(' + valueClause + ',' + additionalColumns.insertValues + ')',
+				[],
+				statement,
+				dummyCallback);
+		
+		
+		
+		logger.debug('inserted tx record on table ' + statement.table);
+	}
+	
 	
 	return {
 		process4Metadata : function(cql){
@@ -156,7 +217,17 @@ function CassandraDDLHandler(){
 			}else if (sqlStrUtility.SqlStrUtility().isInsert(cql)){
 				insertTable4Metadata(cql);
 			} 
+		},
+		
+		executeTransactional : function(cql){
+			if (sqlStrUtility.SqlStrUtility().isUpdate(cql)){
+				updateTransactional(cql);
+			}else if (sqlStrUtility.SqlStrUtility().isInsert(cql)){
+				insertTransactional(cql);
+			} 
+			
 		}
+		
 		
 		
 	}

@@ -4,7 +4,7 @@
 var sqlStrUtilityy = require('./sql-str-utility');
 console.log("############Update1########################"); 
 var update1 = sqlStrUtilityy.SqlStrUtility()
-		.getUpdateStatement("update  tablename set column1='value1',column2=value2 where criteria1=cvalue1");
+		.getUpdateStatement("update  tablename set column1='value1',column2=value2 where criteria1=cvalue1 and criteria2=cvalue2");
 console.log('table : ' +  update1.table);
 update1.columns.forEach(function(entry) {
 	console.log(entry);
@@ -12,17 +12,19 @@ update1.columns.forEach(function(entry) {
 update1.criterias.forEach(function(entry) {
 	console.log(entry);
 });
+console.log(update1.columnString);
 
 console.log("############Update1########################");
 console.log("############Update2########################");
 var update2 = sqlStrUtilityy.SqlStrUtility()
-		.getUpdateStatement("UpdAte  tablename2    set   column3='value3' , column4=value4  where   criteria2=cvalue2");
+		.getUpdateStatement("UpdAte  tablename2    set   column3='value3' , column4=value4  where   criteria2=cvalue2 or column4=value444");
 update2.columns.forEach(function(entry) {
 	console.log(entry);
 });
 update2.criterias.forEach(function(entry) {
 	console.log(entry);
 });
+console.log(update2.columnString);
 console.log("############Update2########################");
 console.log("############Update3########################");
 var parameters = ['\'1111\'','3333'];
@@ -34,6 +36,7 @@ console.log(entry);
 update3.criterias.forEach(function(entry) {
 	console.log(entry);
 });
+console.log(update3.columnString);
 console.log("############Update3########################");
 console.log("############Insert1########################");
 var insert = sqlStrUtilityy.SqlStrUtility()
@@ -42,9 +45,8 @@ console.log('table : ' +  insert.table);
 insert.columns.forEach(function(entry) {
 	console.log(entry);
 });
+console.log(update3.columnString);
 console.log("############Insert1########################");
-
-
 console.log("############Insert2########################");
 var parameters4Insert = [1111];
 var insert = sqlStrUtilityy.SqlStrUtility()
