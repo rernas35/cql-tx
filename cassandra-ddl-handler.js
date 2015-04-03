@@ -12,7 +12,8 @@ var logger = require("./logger");
  *  create table TX_TABLES (table_id UUID primary key,table_name text,creation_date timestamp, status int);
  *  create index table_name on tx_tables(table_name);
  *  TX_COLUMNS : column_id, table_id, type, creation_date, modification_date,  status
- *  create table TX_COLUMNS (column_id UUID primary key, table_id int,column_name text,creation_date timestamp,modifition_date timestamp, status int);
+ *  create table TX_COLUMNS (table_name text,column_name text,column_type text, is_indexed boolean,primary key (table_name,column_name));
+ *  create table TX_TRANSACTIONS (txId UUID,status int,start_date timestamp,primary key (txId));
  */
 
 function CassandraDDLHandler(){
@@ -94,7 +95,23 @@ function CassandraDDLHandler(){
 		thus.execute('create table tx_'+ statement.table +'('+columnsClause + thus.additionalColumns.generateAddtionalColumnsDDL() + ',' + primaryKeyClause +')',
 				[],statement,thus.callBack4CreateTable,thus);
 		
+		thus.createColumns(rows,statement);
+		
+		
 	};
+	
+	this.createColumns=function(rows,statement){
+		for(var i=0 ; i<rows.length ; i++){
+			c = rows[i];
+			var isIndexed = false; 
+			if (c.index_name != null)
+				isIndexed = true;
+			this.execute("insert into TX_COLUMNS(table_name,column_name,column_type, is_indexed) values('?','?','?',?)",
+					[statement.table,c.column_name,c.validator, isIndexed],statement,this.dummyCallback,this);
+			 
+		}
+	}
+	
 	
 	this.callBack4CreateTable=function(rows,statement,thus){
 		logger.debug("Retrieving indexes " + statement.table);
@@ -157,6 +174,8 @@ function CassandraDDLHandler(){
 		var insertStatement = sqlStrUtility.SqlStrUtility().getUpdateStatement(cql);
 		this.checkTableExists(insertStatement);
 	};
+	
+	
 
 	
 	

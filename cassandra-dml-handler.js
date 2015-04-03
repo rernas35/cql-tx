@@ -11,15 +11,6 @@ var cassandraDDLHandler= require('./cassandra-ddl-handler');
 var cassandraBase = require('./cassandra-base');
 var logger = require("./logger");
 
-/*
- * TX-tables : TX_TABLES , TX_COLUMNS ,
- * 
- *  TX_TABLES: table_id, table_name,  creation_date, status
- *  create table TX_TABLES (table_id UUID primary key,table_name text,creation_date timestamp, status int);
- *  create index table_name on tx_tables(table_name);
- *  TX_COLUMNS : column_id, table_id, type, creation_date, modification_date,  status
- *  create table TX_COLUMNS (column_id UUID primary key, table_id int,column_name text,creation_date timestamp,modifition_date timestamp, status int);
- */
 
 function CassandraDMLHandler(){
 	
