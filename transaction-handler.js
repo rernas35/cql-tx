@@ -41,9 +41,27 @@ function TransactionHandler(){
 	
 	
 	this.execute=function(cql,sessionId){
-		ddlHandler.process4Metadata(cql);
-		dmlHandler.executeTransactional(cql);
+		var txObject = new TxObject(sessionId,cql);
+		cassandraBase.getInstance().execute('select count(*) as e from TX_TRANSACTIONS',[],null,this.retrieveSessionIdCallback,this,txObject);
 		
+	}
+	
+	this.retrieveSessionIdCallback=function(rows,statement,thus,txObject){
+		if (rows[0].e > 0){
+			txObject.txCallback=function(rows, statement){
+				logger.debug("execute transactional DDL has worked....");
+				var txObject4dml = new TxObject(txObject.getTransactionId(),txObject.getCql());
+				txObject4dml.txCallback=function(rows, statement){
+					logger.debug("execute transactional DML has worked....");
+				}
+				dmlHandler.getInstance().executeTransactional(txObject4dml.getCql(),txObject4dml);
+			}
+			ddlHandler.getInstance().process4Metadata(txObject.getCql(),txObject);
+			
+			
+		}else {
+			
+		}
 	}
 	
 	
@@ -63,9 +81,12 @@ function TransactionHandler(){
 	};
 	
 	this.txCallback4CreateTransaction=function(rows,statement,thus){
-		cassandraBase.getInstance().execute('insert into TX_TRANSACTIONS(txId,start_date,status) values(?,dateof(now()),?)',[rows[0].sessionid,1],null,thus.dummyCallback,thus);
-		var txObject = new TxObject(rows[0].sessionid);
-		txObject.txCallback=function(some){
+		cassandraBase.getInstance().execute('insert into TX_TRANSACTIONS(txId,start_date,status) values(?,dateof(now()),?)',[rows[0].sessionid,1],null,thus.txCallback4CreateTransaction2,thus,rows[0].sessionid);
+	};
+	
+	this.txCallback4CreateTransaction2=function(rows,statement,thus,sessionId){
+		var txObject = new TxObject(sessionId);
+		txObject.txCallback=function(rows,statement){
 			logger.info(this.getTransactionId() + " transaction is created.");
 		};
 		txObject.txCallback("sd");

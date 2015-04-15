@@ -21,8 +21,8 @@ function CassandraDDLHandler(){
 	this.txCache = new NodeCache( { stdTTL: 100, checkperiod: 120 } );
 	
 	this.additionalColumns = {  columns:[{name:'is_removed',type:'boolean'},
+	                                     {name:'action', type:'int' },
 	                                    {name:'changeset', type:'text'},
-	                                    {name:'action', type:'int' },
 	                                    {name:'trx_id', type:'UUID'}],// insert:1 | update:2 | delete:3
 	                                    
 	                           generateAddtionalColumnsDDL:function(){
@@ -44,11 +44,13 @@ function CassandraDDLHandler(){
 									});
 									return retString;
 							  	},
-								insertValues : "false,'',1"
+								insertValues : "false,1,''",
+								updateValues : "false,2",
 							}; 
 	
-	this.insertTable4Metadata=function(cql){
+	this.insertTable4Metadata=function(cql,txObject){
 		var insertStatement = sqlStrUtility.SqlStrUtility().getInsertStatement(cql);
+		insertStatement.txObject=txObject;
 		this.checkTableExists(insertStatement);
 	};
 	
@@ -110,6 +112,7 @@ function CassandraDDLHandler(){
 					[statement.table,c.column_name,c.validator, isIndexed],statement,this.dummyCallback,this);
 			 
 		}
+		statement.txObject.txCallback(rows,statement);
 	}
 	
 	
@@ -143,6 +146,7 @@ function CassandraDDLHandler(){
 			}
 			
 		});
+		
 	};
 	
 	this.dummyCallback=function(rows,statement,thus){	
@@ -163,6 +167,7 @@ function CassandraDDLHandler(){
 	this.callback4CheckTableExists=function(rows,statement,thus){
 		if (rows[0].c > 0){
 			logger.debug('table already exists!');
+			statement.txObject.txCallback(rows,statement);
 		}else {
 			thus.addTable2TransactionalContext(statement);
 		}
@@ -170,9 +175,10 @@ function CassandraDDLHandler(){
 		
 	};
 	
-	this.updateTable4Metadata=function(cql){
-		var insertStatement = sqlStrUtility.SqlStrUtility().getUpdateStatement(cql);
-		this.checkTableExists(insertStatement);
+	this.updateTable4Metadata=function(cql,txObject){
+		var updateStatement = sqlStrUtility.SqlStrUtility().getUpdateStatement(cql);
+		updateStatement.txObject=txObject;
+		this.checkTableExists(updateStatement);
 	};
 	
 	
@@ -186,11 +192,11 @@ module.exports = {
 			CassandraDDLHandler.prototype = cassandraBase.getInstance();
 			var handler = new CassandraDDLHandler();
 			return {
-				process4Metadata : function(cql){
+				process4Metadata : function(cql,txObject){
 					if (sqlStrUtility.SqlStrUtility().isUpdate(cql)){
-						handler.updateTable4Metadata(cql);
+						handler.updateTable4Metadata(cql,txObject);
 					}else if (sqlStrUtility.SqlStrUtility().isInsert(cql)){
-						handler.insertTable4Metadata(cql);
+						handler.insertTable4Metadata(cql,txObject);
 					} 
 				},
 				transactionColumns : handler.additionalColumns

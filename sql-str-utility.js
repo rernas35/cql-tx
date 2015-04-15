@@ -143,6 +143,7 @@ function SqlUtility() {
 			return {table: matching[1] ,
 					columns: retArray,
 					criterias : criteriaArray,
+					changes : setArray,
 					uniqueColumns:getUniqueColumnList(retArray),
 					columnString: getColumnString(retArray)};
 		},

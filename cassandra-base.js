@@ -17,7 +17,7 @@ function CassandraBaseHandler(){
 		return cql;
 	}
 	
-	function executeInternal(cql,parameters,statement,callback,thus){
+	function executeInternal(cql,parameters,statement,callback,thus,txObject){
 		logger.debug('csql to be executed :' +  cql);
 		logger.debug('parameters :' +  parameters);
 		var pcql = prepareStatement(cql,parameters);
@@ -28,14 +28,14 @@ function CassandraBaseHandler(){
 	               } else {
 	                   logger.debug("No results from the cql : " + cql);
 	               }
-	               callback(result.rows,statement,thus);
+	               callback(result.rows,statement,thus,txObject);
 	           }
 
 	       }); 
 	}
 	
-	return { execute : function(cql,parameters,statement,callback,thus){
-		executeInternal(cql,parameters,statement,callback,thus);
+	return { execute : function(cql,parameters,statement,callback,thus,txObject){
+		executeInternal(cql,parameters,statement,callback,thus,txObject);
 	}};
 	
 }
