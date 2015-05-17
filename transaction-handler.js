@@ -6,6 +6,7 @@
 var ddlHandler = require('./cassandra-ddl-handler');
 var dmlHandler = require('./cassandra-dml-handler');
 var cassandraBase = require('./cassandra-base');
+var sessionHandler = require('./session');
 var logger = require("./logger");
 
 
@@ -73,7 +74,21 @@ function TransactionHandler(){
 	} ;
 	
 	this.commitTransaction=function(uuid){
-		cassandraBase.getInstance().execute('update TX_TRANSACTIONS set status=2 where txid = ?',[uuid],null,this.dummyCallback,this);
+		var session = sessionHandler.getInstance(uuid);
+		session.commitTransaction();		
+//		cassandraBase.getInstance().execute('update TX_TRANSACTIONS set status=2 where txid = ?',[uuid],null,this.dummyCallback,this);
+	};
+	
+	this.retrieveTablesCallback=function(rows,statement,thus){
+		if (rows.length()>0){
+			for (var i=index;i<rows.length();i++){
+				var tableName = rows[i].table_name;
+				
+			}
+			
+		}
+		
+		
 	};
 	
 	this.rollbackTransaction=function(){

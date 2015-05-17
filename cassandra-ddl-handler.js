@@ -12,7 +12,7 @@ var logger = require("./logger");
  *  create table TX_TABLES (table_id UUID primary key,table_name text,creation_date timestamp, status int);
  *  create index table_name on tx_tables(table_name);
  *  TX_COLUMNS : column_id, table_id, type, creation_date, modification_date,  status
- *  create table TX_COLUMNS (table_name text,column_name text,column_type text, is_indexed boolean,primary key (table_name,column_name));
+ *  create table TX_COLUMNS (table_name text,column_name text,column_type text, is_indexed boolean,key_type text,primary key (table_name,column_name));
  *  create table TX_TRANSACTIONS (txId UUID,status int,start_date timestamp,primary key (txId));
  */
 
@@ -108,8 +108,8 @@ function CassandraDDLHandler(){
 			var isIndexed = false; 
 			if (c.index_name != null)
 				isIndexed = true;
-			this.execute("insert into TX_COLUMNS(table_name,column_name,column_type, is_indexed) values('?','?','?',?)",
-					[statement.table,c.column_name,c.validator, isIndexed],statement,this.dummyCallback,this);
+			this.execute("insert into TX_COLUMNS(table_name,column_name,column_type, is_indexed,key_type) values('?','?','?',?,'?')",
+					[statement.table,c.column_name,c.validator, isIndexed, c.type],statement,this.dummyCallback,this);
 			 
 		}
 		statement.txObject.txCallback(rows,statement);

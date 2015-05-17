@@ -34,9 +34,30 @@ function CassandraBaseHandler(){
 	       }); 
 	}
 	
-	return { execute : function(cql,parameters,statement,callback,thus,txObject){
-		executeInternal(cql,parameters,statement,callback,thus,txObject);
-	}};
+	function executeInternal1(cql,parameters,statement,callback,txObject){
+		logger.debug('csql to be executed :' +  cql);
+		logger.debug('parameters :' +  parameters);
+		var pcql = prepareStatement(cql,parameters);
+		client.execute(pcql,[], function (err, result) {
+	           if (!err){
+	               if (result.rows && result.rows.length > 0 ) {
+	                   logger.debug("result.rows.length : " +  result.rows.length);
+	               } else {
+	                   logger.debug("No results from the cql : " + cql);
+	               }
+	               callback(result.rows,statement,txObject);
+	           }
+
+	       }); 
+	}
+	
+	return {execute : function(cql,parameters,statement,callback,thus,txObject){
+							executeInternal(cql,parameters,statement,callback,thus,txObject);
+						},
+			execute1 : function(cql,parameters,statement,callback,txObject){
+							executeInternal1(cql,parameters,statement,callback,txObject);
+						}
+	};
 	
 }
 
