@@ -15,6 +15,6 @@ var txHandler = require('./transaction-handler');
 var txInstance = txHandler.getInstance()
 //txInstance.openTransaction();
 //txInstance.execute("insert into users(user_id,fname,lname) values(101,'test1','test2')","dd9ea51f-6d99-44f9-bdd1-d87818be6007");
-//txInstance.execute("update users set fname='bisi' where lname='falan' and user_id=101","dd9ea51f-6d99-44f9-bdd1-d87818be6008");
+//txInstance.execute("update users set fname='bisi2',lname='bisi3' where user_id=101","dd9ea51f-6d99-44f9-bdd1-d87818be6008");
 txInstance.commitTransaction('dd9ea51f-6d99-44f9-bdd1-d87818be6008', function(){console.log('callllback')});
 
