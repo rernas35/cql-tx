@@ -112,7 +112,7 @@ function CassandraDDLHandler(){
 					[statement.table,c.column_name,c.validator, isIndexed, c.type],statement,this.dummyCallback,this);
 			 
 		}
-		statement.txObject.txCallback(rows,statement);
+		
 	}
 	
 	
@@ -124,7 +124,7 @@ function CassandraDDLHandler(){
 				thus.createIndex4TxClone,
 				thus);
 		logger.debug("Retrieving indexes for " + statement.table);
-		
+		statement.txObject.txCallback(rows,statement);
 	};
 	
 	this.getType=function(validator){
