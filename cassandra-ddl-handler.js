@@ -87,12 +87,12 @@ function CassandraDDLHandler(){
 			} 
 		}
 		
-		primaryKeyClause = '';
-		primaryKeyClause = 'primary key(' + partitionKeyClause;
-		if (clusteringKeyClause != ''){
-			primaryKeyClause += ',' + clusteringKeyClause;
-		}
-		primaryKeyClause += ')'; 
+		primaryKeyClause = 'primary key(trx_id)';
+//		primaryKeyClause = 'primary key(' + partitionKeyClause;
+//		if (clusteringKeyClause != ''){
+//			primaryKeyClause += ',' + clusteringKeyClause;
+//		}
+//		primaryKeyClause += ')'; 
 	
 		thus.execute('create table tx_'+ statement.table +'('+columnsClause + thus.additionalColumns.generateAddtionalColumnsDDL() + ',' + primaryKeyClause +')',
 				[],statement,thus.callBack4CreateTable,thus);

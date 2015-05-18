@@ -73,9 +73,10 @@ function TransactionHandler(){
 		
 	} ;
 	
-	this.commitTransaction=function(uuid){
+	this.commitTransaction=function(uuid, callback){
 		var session = sessionHandler.getInstance(uuid);
-		session.commitTransaction();		
+		session.commitTransaction();
+		session.callback = callback;
 //		cassandraBase.getInstance().execute('update TX_TRANSACTIONS set status=2 where txid = ?',[uuid],null,this.dummyCallback,this);
 	};
 	
