@@ -77,12 +77,16 @@ function Session(txId) {
 		for (var tIndex=0;tIndex<this.tableRows.length;tIndex++){
 			var tableName = this.tableRows[tIndex].table_name; 
 			var changeList = this.changeMap[tableName];
-			for (var i=0;i<changeList.length;i++){
-				var change = changeList[i];
-				console.log('change.action : ' + this.prepareChangeStatement(change, tableName) );
-				var boundCallback = this.removeChange.bind({root:this,tableName:tableName});
-				cassandraBase.getInstance().execute1(this.prepareChangeStatement(change, tableName),[],null,boundCallback);
-			} 
+			if (changeList.length == 0){
+				this.callback();
+			}else {
+				for (var i=0;i<changeList.length;i++){
+					var change = changeList[i];
+					console.log('change.action : ' + this.prepareChangeStatement(change, tableName) );
+					var boundCallback = this.removeChange.bind({root:this,tableName:tableName});
+					cassandraBase.getInstance().execute1(this.prepareChangeStatement(change, tableName),[],null,boundCallback);
+				} 
+			}
 		}
 	}
 	

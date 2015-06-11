@@ -41,20 +41,20 @@ function TxObject(transactionId,cql) {
 function TransactionHandler(){
 	
 	
-	this.execute=function(cql,sessionId){
+	this.execute=function(cql,sessionId,callback){
 		var txObject = new TxObject(sessionId,cql);
+		txObject.txCallback = callback;
 		cassandraBase.getInstance().execute('select count(*) as e from TX_TRANSACTIONS',[],null,this.retrieveSessionIdCallback,this,txObject);
 		
 	}
 	
 	this.retrieveSessionIdCallback=function(rows,statement,thus,txObject){
 		if (rows[0].e > 0){
+			var callbackImpl = txObject.txCallback;
 			txObject.txCallback=function(rows, statement){
 				logger.debug("execute transactional DDL has worked....");
 				var txObject4dml = new TxObject(txObject.getTransactionId(),txObject.getCql());
-				txObject4dml.txCallback=function(rows, statement){
-					logger.debug("execute transactional DML has worked....");
-				}
+				txObject4dml.txCallback=callbackImpl;
 				dmlHandler.getInstance().executeTransactional(txObject4dml.getCql(),txObject4dml);
 			}
 			ddlHandler.getInstance().process4Metadata(txObject.getCql(),txObject);
@@ -68,17 +68,26 @@ function TransactionHandler(){
 	
 	
 	
-	this.openTransaction=function(){
-		cassandraBase.getInstance().execute('select uuid() as sessionId from TX_TABLES',[],null,this.txCallback4CreateTransaction,this);
+	this.openTransaction=function(openTransactionCallback){
+		this.openTransactionCallback = openTransactionCallback;
+		var boundCallback = this.txCallback4CreateTransaction.bind(this);
+		cassandraBase.getInstance().execute1('select uuid() as sessionId from TX_TABLES',[],null,boundCallback);
 		
 	} ;
 	
 	this.commitTransaction=function(uuid, callback){
 		var session = sessionHandler.getInstance(uuid);
 		session.commitTransaction();
-		session.callback = callback;
-//		cassandraBase.getInstance().execute('update TX_TRANSACTIONS set status=2 where txid = ?',[uuid],null,this.dummyCallback,this);
+		session.callback = function(){};
+		var txObject = new TxObject(uuid,'');
+		txObject.txCallback = callback;
+		var boundCallback = this.commitTransactionStatusUpdateCallback.bind(this);
+		cassandraBase.getInstance().execute1('update TX_TRANSACTIONS set status=2 where txid = ?',[uuid],null,boundCallback,txObject);
 	};
+	
+	this.commitTransactionStatusUpdateCallback=function(rows,statement,txObject){
+		txObject.txCallback();
+	}
 	
 	this.retrieveTablesCallback=function(rows,statement,thus){
 		if (rows.length()>0){
@@ -96,8 +105,10 @@ function TransactionHandler(){
 		cassandraBase.getInstance().execute('update TX_TRANSACTIONS set status=3 where txid = ?',[uuid],null,this.dummyCallback,this);
 	};
 	
-	this.txCallback4CreateTransaction=function(rows,statement,thus){
-		cassandraBase.getInstance().execute('insert into TX_TRANSACTIONS(txId,start_date,status) values(?,dateof(now()),?)',[rows[0].sessionid,1],null,thus.txCallback4CreateTransaction2,thus,rows[0].sessionid);
+	this.txCallback4CreateTransaction=function(rows,statement){
+		var boundCallback = this.txCallback4CreateTransaction2.bind(this);
+		this.sessionId=rows[0].sessionid;
+		cassandraBase.getInstance().execute1('insert into TX_TRANSACTIONS(txId,start_date,status) values(?,dateof(now()),?)',[rows[0].sessionid,1],null,boundCallback);
 	};
 	
 	this.txCallback4CreateTransaction2=function(rows,statement,thus,sessionId){
@@ -105,7 +116,7 @@ function TransactionHandler(){
 		txObject.txCallback=function(rows,statement){
 			logger.info(this.getTransactionId() + " transaction is created.");
 		};
-		txObject.txCallback("sd");
+		this.openTransactionCallback();
 	};
 	
 	this.dummyCallback=function(rows,statement,thus){	
