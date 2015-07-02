@@ -3,6 +3,8 @@
  */
 
 
+var uuid = require("node-uuid");
+
 var ddlHandler = require('./cassandra-ddl-handler');
 var dmlHandler = require('./cassandra-dml-handler');
 var cassandraBase = require('./cassandra-base');
@@ -65,14 +67,9 @@ function TransactionHandler(){
 		}
 	}
 	
-	
-	
-	
 	this.openTransaction=function(openTransactionCallback){
 		this.openTransactionCallback = openTransactionCallback;
-		var boundCallback = this.txCallback4CreateTransaction.bind(this);
-		cassandraBase.getInstance().execute1('select uuid() as sessionId from TX_TABLES',[],null,boundCallback);
-		
+		this.txCallback4CreateTransaction(uuid.v4());
 	} ;
 	
 	this.commitTransaction=function(uuid, callback){
@@ -105,10 +102,10 @@ function TransactionHandler(){
 		cassandraBase.getInstance().execute('update TX_TRANSACTIONS set status=3 where txid = ?',[uuid],null,this.dummyCallback,this);
 	};
 	
-	this.txCallback4CreateTransaction=function(rows,statement){
+	this.txCallback4CreateTransaction=function(genSessionId){
 		var boundCallback = this.txCallback4CreateTransaction2.bind(this);
-		this.sessionId=rows[0].sessionid;
-		cassandraBase.getInstance().execute1('insert into TX_TRANSACTIONS(txId,start_date,status) values(?,dateof(now()),?)',[rows[0].sessionid,1],null,boundCallback);
+		this.sessionId=genSessionId;
+		cassandraBase.getInstance().execute1('insert into TX_TRANSACTIONS(txId,start_date,status) values(?,dateof(now()),?)',[genSessionId,1],null,boundCallback);
 	};
 	
 	this.txCallback4CreateTransaction2=function(rows,statement,thus,sessionId){

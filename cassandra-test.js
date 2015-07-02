@@ -13,10 +13,10 @@ var txHandler = require('./transaction-handler');
 //dmlHandler.getInstance().executeTransactional("insert into users(user_id,fname,lname) values(72,'342','234')",'uuid()');
 
 var txInstance = txHandler.getInstance()
-txInstance.openTransaction(function(txid){console.log('open transaction callback %s' , this.sessionId)});
-//txInstance.execute("insert into users(user_id,fname,lname) values(106,'abdul fattah','anyname')","dd9ea51f-6d99-44f9-bdd1-d87818be6117");
+//txInstance.openTransaction(function(txid){console.log('open transaction callback %s' , this.sessionId)});
+//txInstance.execute("insert into users(user_id,fname,lname) values(109,'ilker3 riza','ernas')","decd86eb-6f55-4f81-a8ee-ea771993ce79",function(){console.log('executed')});
 //txInstance.execute("update users set lname='mahran' where user_id=106","dd9ea51f-6d99-44f9-bdd1-d87818be6113");
-//txInstance.commitTransaction('dd9ea51f-6d99-44f9-bdd1-d87818be6113', function(){console.log('callllback')});
+txInstance.commitTransaction('decd86eb-6f55-4f81-a8ee-ea771993ce79', function(){console.log('callllback')});
 
 
 

@@ -132,6 +132,8 @@ function CassandraDDLHandler(){
 			return 'text';
 		}else if (validator == 'org.apache.cassandra.db.marshal.Int32Type'){
 			return 'int';
+		}else if (validator == 'org.apache.cassandra.db.marshal.LongType'){
+			return 'bigint';
 		}
 		return "";
 	};
