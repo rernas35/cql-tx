@@ -3,12 +3,12 @@
  */
 
 var txHandler = require('./transaction-handler');
-
+var ws = require('ws');
 // 	{"commandType" : "openTransaction" }  --> {"status": 0 ,"responseCode": 0,"description" : "OK,go on" , txId : "uuid" }
 //	{"commandType" : "commitTransaction", "txId" : "uuid" }  --> {"status": 0 ,"responseCode": 0, "description" : "OK,go on"}
 //	{"commandType" : "rollbackTransaction", "txId" : "uuid" }  --> {"status": 0 ,"responseCode": 0, "description" : "OK,go on"}
 //	{"commandType" : "execute", "txId" : "uuid" }  --> {"status": 0 ,"responseCode": 0, "description" : "OK,go on"}
-var WebSocketServer = require('ws').Server
+var WebSocketServer = ws.Server
   , wss = new WebSocketServer({port: 8080});
 wss.on('connection', function(ws) {
     ws.on('message', function(message) {
