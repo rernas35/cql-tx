@@ -1,0 +1,27 @@
+{
+  "name": "cql-tx",
+  "version": "0.0.0",
+  "description": "Transactional Layer For Apache Cassandra ",
+  "main": "transaction-handler.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rernas35/cql-tx.git"
+  },
+  "keywords": [
+    "cassandra",
+    "transaction"
+  ],
+  "author": "Ilker Riza ERNAS <rernas35@gmail.com> (http://devside.blogspot.com.tr/)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rernas35/cql-tx/issues"
+  },
+  "homepage": "https://github.com/rernas35/cql-tx",
+  "devDependencies": {
+    "chai": "^3.0.0",
+    "mocha": "^2.2.5"
+  }
+}

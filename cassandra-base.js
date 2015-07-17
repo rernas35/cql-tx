@@ -28,7 +28,11 @@ function CassandraBaseHandler(){
 	               } else {
 	                   logger.debug("No results from the cql : " + cql);
 	               }
-	               callback(result.rows,statement,thus,txObject);
+	               try{
+	            	   callback(result.rows,statement,thus,txObject);
+	               }catch(ex){
+	            	   txObject.errCallback(ex);
+	               }
 	           }
 
 	       }); 
@@ -45,7 +49,11 @@ function CassandraBaseHandler(){
 	               } else {
 	                   logger.debug("No results from the cql : " + cql);
 	               }
-	               callback(result.rows,statement,txObject);
+	               try {
+	            	   callback(result.rows,statement,txObject);
+	               }catch(ex){
+	            	   txObject.errCallback(ex);
+	               }
 	           }
 
 	       }); 

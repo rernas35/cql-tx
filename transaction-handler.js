@@ -43,14 +43,20 @@ function TxObject(transactionId,cql) {
 function TransactionHandler(){
 	
 	
-	this.execute=function(cql,sessionId,callback){
+	this.execute=function(cql,sessionId,callback,errCallback){
 		var txObject = new TxObject(sessionId,cql);
 		txObject.txCallback = callback;
-		cassandraBase.getInstance().execute('select count(*) as e from TX_TRANSACTIONS',[],null,this.retrieveSessionIdCallback,this,txObject);
+		txObject.errCallback = errCallback;
+		try {
+			var boundCallback = this.retrieveSessionIdCallback.bind(this);
+			cassandraBase.getInstance().execute1('select count(*) as e from TX_TRANSACTIONS',[],null,boundCallback,txObject);
+		}catch (ex){
+			txObject.errCallback(ex);
+		}
 		
 	}
 	
-	this.retrieveSessionIdCallback=function(rows,statement,thus,txObject){
+	this.retrieveSessionIdCallback=function(rows,statement,txObject){
 		if (rows[0].e > 0){
 			var callbackImpl = txObject.txCallback;
 			txObject.txCallback=function(rows, statement){
@@ -67,19 +73,29 @@ function TransactionHandler(){
 		}
 	}
 	
-	this.openTransaction=function(openTransactionCallback){
-		this.openTransactionCallback = openTransactionCallback;
-		this.txCallback4CreateTransaction(uuid.v4());
+	this.openTransaction=function(openTransactionCallback,errCallback){
+		var txObject = new TxObject(uuid.v4(),'');
+		txObject.txCallback=openTransactionCallback;
+		txObject.errCallback = errCallback;
+		try {
+			this.txCallback4CreateTransaction(txObject);
+		}catch (ex){
+			errCallback(ex);
+		}
 	} ;
 	
-	this.commitTransaction=function(uuid, callback){
-		var session = sessionHandler.getInstance(uuid);
-		session.commitTransaction();
-		session.callback = function(){};
+	this.commitTransaction=function(uuid, callback,errCallback){
 		var txObject = new TxObject(uuid,'');
 		txObject.txCallback = callback;
-		var boundCallback = this.commitTransactionStatusUpdateCallback.bind(this);
-		cassandraBase.getInstance().execute1('update TX_TRANSACTIONS set status=2 where txid = ?',[uuid],null,boundCallback,txObject);
+		txObject.errCallback = errCallback;
+		try {
+			var session = sessionHandler.getInstance(txObject);
+			session.commitTransaction();
+			var boundCallback = this.commitTransactionStatusUpdateCallback.bind(this);
+			cassandraBase.getInstance().execute1('update TX_TRANSACTIONS set status=2 where txid = ?',[uuid],null,boundCallback,txObject);
+		}catch (ex){
+			txObject.errCallback(ex);
+		}
 	};
 	
 	this.commitTransactionStatusUpdateCallback=function(rows,statement,txObject){
@@ -98,22 +114,22 @@ function TransactionHandler(){
 		
 	};
 	
-	this.rollbackTransaction=function(){
-		cassandraBase.getInstance().execute('update TX_TRANSACTIONS set status=3 where txid = ?',[uuid],null,this.dummyCallback,this);
+	this.rollbackTransaction=function(uuid,callback,errCallback){
+		try{
+			cassandraBase.getInstance().execute('update TX_TRANSACTIONS set status=3 where txid = ?',[uuid],null,this.dummyCallback,this);
+		}catch (ex){
+			errCallback(ex);
+		}
+
 	};
 	
-	this.txCallback4CreateTransaction=function(genSessionId){
+	this.txCallback4CreateTransaction=function(txObject){
 		var boundCallback = this.txCallback4CreateTransaction2.bind(this);
-		this.sessionId=genSessionId;
-		cassandraBase.getInstance().execute1('insert into TX_TRANSACTIONS(txId,start_date,status) values(?,dateof(now()),?)',[genSessionId,1],null,boundCallback);
+		cassandraBase.getInstance().execute1('insert into TX_TRANSACTIONS(txId,start_date,status) values(?,dateof(now()),?)',[txObject.getTransactionId(),1],null,boundCallback,txObject);
 	};
 	
-	this.txCallback4CreateTransaction2=function(rows,statement,thus,sessionId){
-		var txObject = new TxObject(sessionId);
-		txObject.txCallback=function(rows,statement){
-			logger.info(this.getTransactionId() + " transaction is created.");
-		};
-		this.openTransactionCallback();
+	this.txCallback4CreateTransaction2=function(rows,statement,txObject){
+		txObject.txCallback();
 	};
 	
 	this.dummyCallback=function(rows,statement,thus){	
