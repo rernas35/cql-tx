@@ -17,7 +17,7 @@ var logger = require("./logger");
 
 function CassandraDDLHandler(){
 	
-	this.txCache = new NodeCache( { stdTTL: 100, checkperiod: 120 } );
+	
 	
 	this.additionalColumns = {  columns:[{name:'is_removed',type:'boolean'},
 	                                     {name:'action', type:'int' },

@@ -73,33 +73,39 @@ function Session(txObj) {
 	
 	this.processChange=function(){
 		this.wholeChangeCheck = 0 ;
+		var skipCallback = true;
 		for (var tIndex=0;tIndex<this.tableRows.length;tIndex++){
 			var tableName = this.tableRows[tIndex].table_name; 
 			var changeList = this.changeMap[tableName];
-			if (changeList.length == 0){
-				this.callback();
-			}else {
+			if (changeList.length != 0){
+				skipCallback = false;
 				for (var i=0;i<changeList.length;i++){
 					var change = changeList[i];
 					console.log('change.action : ' + this.prepareChangeStatement(change, tableName) );
 					var boundCallback = this.removeChange.bind({root:this,tableName:tableName});
-					cassandraBase.getInstance().execute1(this.prepareChangeStatement(change, tableName),[],null,boundCallback);
+					cassandraBase.getInstance().execute1(this.prepareChangeStatement(change, tableName),[],null,boundCallback,this.txObject);
 				} 
 			}
 		}
+		if (skipCallback)
+			this.txObject.txCallback();
 	}
 	
 	this.removeChange = function(){
-		this.root.wholeChangeCheck++;
-		if (this.root.wholeChangeCheck == this.root.changeCount){
-			var boundCallback = this.root.removeChangeCallback.bind({root:this.root});
-			cassandraBase.getInstance().execute1('delete from tx_' + this.tableName + ' where trx_id = ?',[this.root.txObject.getTransactionId()],null, boundCallback,this.txObject )
-		}
-		
+		var boundCallback = this.root.removeChangeCallback.bind({root:this.root});
+		cassandraBase.getInstance().execute1('delete from tx_' + this.tableName + ' where trx_id = ?',[this.root.txObject.getTransactionId()],null, boundCallback,this.root.txObject )
 	}
 	
 	this.removeChangeCallback = function(){
-			this.root.callback();
+		var boundCallback = this.root.commitTransactionStatusUpdateCallback.bind(this);
+		cassandraBase.getInstance().execute1('update TX_TRANSACTIONS set status=2 where txid = ?',[this.root.txObject.getTransactionId()],null,boundCallback,this.root.txObject);
+	}
+	
+	this.commitTransactionStatusUpdateCallback=function(rows,statement,txObject){
+		this.root.wholeChangeCheck++;
+		if (this.root.wholeChangeCheck == this.root.changeCount) {
+			txObject.txCallback();
+		}
 	}
 	
 	this.prepareChangeStatement = function(change,tableName){

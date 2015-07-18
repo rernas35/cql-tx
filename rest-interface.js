@@ -78,5 +78,5 @@ function initializeSuccesfulResponse(){
 }
 
 function initializeErrorResponse(err,code){
-	return {status:1,responseCode:code,description:err.message};
+	return {status:1,responseCode:code,description:err.message,stack:err.stack};
 }

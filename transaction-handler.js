@@ -91,16 +91,12 @@ function TransactionHandler(){
 		try {
 			var session = sessionHandler.getInstance(txObject);
 			session.commitTransaction();
-			var boundCallback = this.commitTransactionStatusUpdateCallback.bind(this);
-			cassandraBase.getInstance().execute1('update TX_TRANSACTIONS set status=2 where txid = ?',[uuid],null,boundCallback,txObject);
 		}catch (ex){
 			txObject.errCallback(ex);
 		}
 	};
 	
-	this.commitTransactionStatusUpdateCallback=function(rows,statement,txObject){
-		txObject.txCallback();
-	}
+	
 	
 	this.retrieveTablesCallback=function(rows,statement,thus){
 		if (rows.length()>0){
