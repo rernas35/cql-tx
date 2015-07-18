@@ -1,8 +1,8 @@
 {
   "name": "cql-tx",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Transactional Layer For Apache Cassandra ",
-  "main": "transaction-handler.js",
+  "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start" : "node main.js"
@@ -27,12 +27,12 @@
     "mocha": "^2.2.5"
   },
   "dependencies" : { 
+	  "node-uuid" : "1.4.x",
 	  "async" : "0.9.x",
-	  "cassandra-driver" : "2.x.x",
-	  "node-uuid" : "^1.4.1",
-	  "restify" : "3.x.x",
 	  "string" : "1.9.x",
 	  "winston" : "0.9.x",
+	  "cassandra-driver" : "2.x.x",
+	  "restify" : "3.x.x",
 	  "ws" : "0.4.x"
   }
 }
