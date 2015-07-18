@@ -4,10 +4,11 @@
 
 var cassandra = require('cassandra-driver');
 var logger = require("./logger");
+var config = require("./config");
 
 function CassandraBaseHandler(){
 	
-	var client = new cassandra.Client({contactPoints: ['127.0.0.1'], keyspace: 'mykeyspace'});
+	var client = new cassandra.Client(config.cassandraClient);
 	
 	function prepareStatement(cql,parameters){
 		for(var i = 0 ; i < parameters.length;i++){

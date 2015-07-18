@@ -1,11 +1,11 @@
 {
   "name": "cql-tx",
-  "version": "0.0.4",
+  "version": "0.0.8",
   "description": "Transactional Layer For Apache Cassandra ",
   "main": "transaction-handler.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start" : "node rest-interface.js"
+    "start" : "node main.js"
     	
   },
   "repository": {
@@ -27,12 +27,12 @@
     "mocha": "^2.2.5"
   },
   "dependencies" : { 
-	  "async" : ">=0.9.0",
-	  "cassandra-driver" : ">=2.0.0",
-	  "node-uuid" : ">=1.4.3",
-	  "restify" : ">=3.0.3",
-	  "string" : ">=1.9.0",
-	  "winston" : ">=0.9.0",
-	  "ws" : ">=0.4.31"
+	  "async" : "0.9.x",
+	  "cassandra-driver" : "2.x.x",
+	  "node-uuid" : "^1.4.1",
+	  "restify" : "3.x.x",
+	  "string" : "1.9.x",
+	  "winston" : "0.9.x",
+	  "ws" : "0.4.x"
   }
 }

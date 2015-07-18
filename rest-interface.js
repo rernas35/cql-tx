@@ -4,10 +4,8 @@
 
 var txHandler = require('./transaction-handler');
 var restify = require('restify');
+var config = require("./config");
 
-function generalErrCallback(response,err){
-	response.send(err);
-}
 
 function respondWithoutTrx(req, res, next) {
 	console.log(req.body.commandType);
@@ -60,18 +58,21 @@ function respondWithoutTrx(req, res, next) {
 	}
 }
 
-var server = restify.createServer();
+function initRestServer(){
+	var server = restify.createServer();
 
-server.use(restify.acceptParser(server.acceptable));
-server.use(restify.bodyParser());
-server.use(restify.queryParser());
+	server.use(restify.acceptParser(server.acceptable));
+	server.use(restify.bodyParser());
+	server.use(restify.queryParser());
 
-server.get('/cqltx', respondWithoutTrx);
-server.post('/cqltx', respondWithoutTrx);
+	server.get('/cqltx', respondWithoutTrx);
+	server.post('/cqltx', respondWithoutTrx);
 
-server.listen(8080, function() {
-	console.log('%s listening at %s', server.name, server.url);
-});
+	server.listen(config.restPort, function() {
+		console.log('%s listening at %s', server.name, server.url);
+	});
+}
+
 
 function initializeSuccesfulResponse(){
 	return {status:0,responseCode:0,description:"OK"};
@@ -79,4 +80,9 @@ function initializeSuccesfulResponse(){
 
 function initializeErrorResponse(err,code){
 	return {status:1,responseCode:code,description:err.message,stack:err.stack};
+}
+
+
+module.exports = {
+		initRestServer : initRestServer
 }
