@@ -2,25 +2,25 @@
  * New node file
  */
 
-var NodeCache = require( "node-cache" );
-var myCache = new NodeCache( { stdTTL: 100, checkperiod: 120 } );
-
-obj = { my: "Special", variable: 42 };
-myCache.set( "myKey", obj, function( err, success ){
-  if( !err && success ){
-    console.log( success );
-    // true
-    // ... do something ...
-  }
-});
-
-myCache.get( "myKey", function( err, value ){
-	  if( !err ){
-	    console.log( value );
-	    // { "myKey": { my: "Special", variable: 42 } }
-	    // ... do something ...
-	  }
-	});
+//var NodeCache = require( "node-cache" );
+//var myCache = new NodeCache( { stdTTL: 100, checkperiod: 120 } );
+//
+//obj = { my: "Special", variable: 42 };
+//myCache.set( "myKey", obj, function( err, success ){
+//  if( !err && success ){
+//    console.log( success );
+//    // true
+//    // ... do something ...
+//  }
+//});
+//
+//myCache.get( "myKey", function( err, value ){
+//	  if( !err ){
+//	    console.log( value );
+//	    // { "myKey": { my: "Special", variable: 42 } }
+//	    // ... do something ...
+//	  }
+//	});
 
 
 //var cql = require('node-cassandra-cql');

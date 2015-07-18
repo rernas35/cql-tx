@@ -1,6 +1,5 @@
 
 var async = require('async');
-var NodeCache = require( "node-cache" );
 var sqlStrUtility = require('./sql-str-utility');
 var cassandraBase = require('./cassandra-base');
 var logger = require("./logger");

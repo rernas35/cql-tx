@@ -5,7 +5,7 @@
 
 var cassandra = require('cassandra-driver');
 var async = require('async');
-var NodeCache = require( "node-cache" );
+//var NodeCache = require( "node-cache" );
 var sqlStrUtility = require('./sql-str-utility');
 var cassandraDDLHandler= require('./cassandra-ddl-handler');
 var cassandraBase = require('./cassandra-base');

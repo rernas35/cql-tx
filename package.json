@@ -1,6 +1,6 @@
 {
   "name": "cql-tx",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Transactional Layer For Apache Cassandra ",
   "main": "transaction-handler.js",
   "scripts": {
@@ -23,5 +23,14 @@
   "devDependencies": {
     "chai": "^3.0.0",
     "mocha": "^2.2.5"
+  },
+  "dependencies" : { 
+	  "async" : ">=0.9.0",
+	  "cassandra-driver" : ">=2.0.0",
+	  "node-uuid" : ">=1.4.3",
+	  "restify" : ">=3.0.3",
+	  "string" : ">=1.9.0",
+	  "winston" : ">=0.9.0",
+	  "ws" : ">=0.4.31"
   }
 }
