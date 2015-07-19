@@ -90,6 +90,7 @@ function TransactionHandler(){
 		var txObject = new TxObject(uuid,'');
 		txObject.txCallback = callback;
 		txObject.errCallback = errCallback;
+		txObject.isRollback = false;
 		try {
 			var session = sessionHandler.getInstance(txObject);
 			session.commitTransaction();
@@ -113,10 +114,15 @@ function TransactionHandler(){
 	};
 	
 	this.rollbackTransaction=function(uuid,callback,errCallback){
-		try{
-			cassandraBase.getInstance().execute('update TX_TRANSACTIONS set status=3 where txid = ?',[uuid],null,this.dummyCallback,this);
+		var txObject = new TxObject(uuid,'');
+		txObject.txCallback = callback;
+		txObject.errCallback = errCallback;
+		txObject.isRollback = true;
+		try {
+			var session = sessionHandler.getInstance(txObject);
+			session.commitTransaction();
 		}catch (ex){
-			errCallback(ex);
+			txObject.errCallback(ex);
 		}
 
 	};

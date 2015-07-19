@@ -18,7 +18,6 @@ function Session(txObj) {
 	this.commitTransaction=function(){
 		var boundCallback = this.retrieveTablesCallback.bind(this);
 		cassandraBase.getInstance().execute1('select table_name from tx_tables',[],null,boundCallback,this.txObject);
-//		cassandraBase.getInstance().execute('update TX_TRANSACTIONS set status=2 where txid = ?',[uuid],null,this.dummyCallback,this);
 	};
 	
 	this.retrieveTablesCallback = function(rows,statement){
@@ -75,20 +74,30 @@ function Session(txObj) {
 		this.wholeChangeCheck = 0 ;
 		var skipCallback = true;
 		for (var tIndex=0;tIndex<this.tableRows.length;tIndex++){
-			var tableName = this.tableRows[tIndex].table_name; 
-			var changeList = this.changeMap[tableName];
-			if (changeList.length != 0){
-				skipCallback = false;
-				for (var i=0;i<changeList.length;i++){
-					var change = changeList[i];
-					console.log('change.action : ' + this.prepareChangeStatement(change, tableName) );
-					var boundCallback = this.removeChange.bind({root:this,tableName:tableName});
-					cassandraBase.getInstance().execute1(this.prepareChangeStatement(change, tableName),[],null,boundCallback,this.txObject);
-				} 
+			var tableName = this.tableRows[tIndex].table_name;
+			if (!this.txObject.isRollback){
+				var changeList = this.changeMap[tableName];
+				if (changeList.length != 0){
+					skipCallback = false;
+					for (var i=0;i<changeList.length;i++){
+						var change = changeList[i];
+						console.log('change.action : ' + this.prepareChangeStatement(change, tableName) );
+						var boundCallback = this.removeChange.bind({root:this,tableName:tableName});
+						cassandraBase.getInstance().execute1(this.prepareChangeStatement(change, tableName),[],null,boundCallback,this.txObject);
+					} 
+				}
+			}else {
+				this.tableName = tableName;
+				this.removeChange4Rollback();
 			}
 		}
 		if (skipCallback)
 			this.txObject.txCallback();
+	}
+	
+	this.removeChange4Rollback = function(){
+		var boundCallback = this.removeChangeCallback.bind({root:this});
+		cassandraBase.getInstance().execute1('delete from tx_' + this.tableName + ' where trx_id = ?',[this.txObject.getTransactionId()],null, boundCallback,this.txObject )
 	}
 	
 	this.removeChange = function(){
@@ -97,8 +106,12 @@ function Session(txObj) {
 	}
 	
 	this.removeChangeCallback = function(){
+		var sessionStatus = 2;
+		if (this.root.txObject.isRollback){
+			sessionStatus = 3;
+		}
 		var boundCallback = this.root.commitTransactionStatusUpdateCallback.bind(this);
-		cassandraBase.getInstance().execute1('update TX_TRANSACTIONS set status=2 where txid = ?',[this.root.txObject.getTransactionId()],null,boundCallback,this.root.txObject);
+		cassandraBase.getInstance().execute1('update TX_TRANSACTIONS set status=' + sessionStatus + ' where txid = ?',[this.root.txObject.getTransactionId()],null,boundCallback,this.root.txObject);
 	}
 	
 	this.commitTransactionStatusUpdateCallback=function(rows,statement,txObject){

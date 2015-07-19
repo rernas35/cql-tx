@@ -36,7 +36,7 @@ function respondWithoutTrx(req, res, next) {
 			next();
 		});
 	} else if (cmd.commandType == 'rollbackTransaction') {
-		txInstance.commitTransaction(cmd.txId, function() {
+		txInstance.rollbackTransaction(cmd.txId, function() {
 			var response = initializeSuccesfulResponse();
 			res.send(JSON.stringify(response));
 			next();
