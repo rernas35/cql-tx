@@ -28,6 +28,8 @@ function SqlUtility() {
 	var updateSetterRegex = /(\S+)=(\'*.+\'*)/;
 
 	var insertRegex = /insert(?:\s+)into(?:\s+)(\S+)\((.+)\)(?:\s+)values\((.+)\)(?:\s*)/ig;
+	
+	var deleteRegex = /delete(?:\s+)from(?:\s+)(\S+)(?:\s+)where(?:\s+)(.+)(?:\s*)/ig;
 
 	var selectRegex = "select bisi bisi";
 
@@ -119,9 +121,15 @@ function SqlUtility() {
 				return true;
 			}
 		},
+		isDelete : function(cql){
+			var matching = deleteRegex.exec(cql);
+			if (matching != null &&  matching.length > 0){
+				return true;
+			}
+		},
 
 	
-		
+		///update(?:\s+)(\S+)(?:\s+)set(?:\s+)(.+)(?:\s+)where(?:\s+)(.+)(?:\s*)/ig;
 		getUpdateStatement : function(updateSql, parameters) {
 			var matching = updateRegex.exec(updateSql);
 			var setArray = getSetter(matching[2]);
@@ -144,6 +152,28 @@ function SqlUtility() {
 					columns: retArray,
 					criterias : criteriaArray,
 					changes : setArray,
+					uniqueColumns:getUniqueColumnList(retArray),
+					columnString: getColumnString(retArray)};
+		},
+		
+		///delete(?:\s+)from(?:\s+)(\S+)(?:\s+)where(?:\s+)(.+)(?:\s*)/ig;
+		getDeleteStatement : function(deleteSql, parameters) {
+			var matching = deleteRegex.exec(deleteSql);
+			var retArray = []
+
+			var criteriaArray = getCriteria(matching[2]);
+			criteriaArray.forEach(function(entry) {
+				retArray.push(entry);
+			});
+			
+			if (parameters != undefined){
+				matchWithParameters(retArray,parameters)
+			}
+				
+			
+			return {table: matching[1] ,
+					columns: retArray,
+					criterias : criteriaArray,
 					uniqueColumns:getUniqueColumnList(retArray),
 					columnString: getColumnString(retArray)};
 		},

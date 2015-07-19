@@ -45,6 +45,7 @@ function CassandraDDLHandler(){
 							  	},
 								insertValues : "false,1,''",
 								updateValues : "false,2",
+								deleteValues : "true,3"
 							}; 
 	
 	this.insertTable4Metadata=function(cql,txObject){
@@ -182,6 +183,11 @@ function CassandraDDLHandler(){
 		this.checkTableExists(updateStatement);
 	};
 	
+	this.deleteTable4Metadata=function(cql,txObject){
+		var deleteStatement = sqlStrUtility.SqlStrUtility().getDeleteStatement(cql);
+		deleteStatement.txObject=txObject;
+		this.checkTableExists(deleteStatement);
+	};
 	
 
 	
@@ -198,6 +204,8 @@ module.exports = {
 						handler.updateTable4Metadata(cql,txObject);
 					}else if (sqlStrUtility.SqlStrUtility().isInsert(cql)){
 						handler.insertTable4Metadata(cql,txObject);
+					}else if (sqlStrUtility.SqlStrUtility().isDelete(cql)){
+						handler.deleteTable4Metadata(cql,txObject);
 					} 
 				},
 				transactionColumns : handler.additionalColumns

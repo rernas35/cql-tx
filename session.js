@@ -173,6 +173,31 @@ function Session(txObj) {
 				
 			}
 			return "update " + tableName + " set " + setStatement + " where " + whereStatement ;
+		}else if (change.action == 3){
+			var setStatement = '';
+			var whereStatement = '';
+			var index = 0,wIndex=0;
+			var changeSet = change.changeset.split(',');
+			for (var i=0;i<columnList.length;i++){
+				var col = columnList[i];
+				if (col.key_type == 'partition_key' ){
+					if (wIndex > 0){
+						whereStatement += " and ";
+					}
+					whereStatement += col.column_name + '=';
+					var isText = (col.column_type == 'org.apache.cassandra.db.marshal.UTF8Type');
+					if (isText){
+						whereStatement += "'";
+					}
+					whereStatement += change[col.column_name];
+					if (isText){
+						whereStatement += "'";
+					}
+					wIndex++;
+				}
+				
+			}
+			return "delete from " + tableName + " where " + whereStatement ;
 		}
 		
 		

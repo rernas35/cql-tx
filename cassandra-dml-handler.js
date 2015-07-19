@@ -14,12 +14,42 @@ var logger = require("./logger");
 function CassandraDMLHandler(){
 	
 
+	this.deleteTransactional=function(cql,txObject){
+		var deleteStatement = sqlStrUtility.SqlStrUtility().getDeleteStatement(cql);
+		deleteStatement.txObject=txObject;
+		this.deleteTxRecord(deleteStatement,txObject);	
+	}
+	
 	this.updateTransactional=function(cql,txObject){
 		var updateStatement = sqlStrUtility.SqlStrUtility().getUpdateStatement(cql);
 		updateStatement.txObject=txObject;
 		this.updateTxRecord(updateStatement,txObject);
 	}
 
+	this.deleteTxRecord=function(statement,txObject){
+		logger.debug('inserting tx record on table ' + statement.table);
+		var columnClause = '';
+		var valueClause = '';
+		for (var i=0; i<statement.columns.length;i++){
+			var c = statement.columns[i];
+			if (columnClause != '')
+				columnClause += ',';
+			columnClause += c.column;
+			if (valueClause != '')
+				valueClause += ',';
+			valueClause += c.value;
+		}
+		
+		this.execute('insert into tx_' + statement.table + '(' + columnClause + ',' +  cassandraDDLHandler.getInstance().transactionColumns.getColumnString() + 
+				') values(' + valueClause + ','  + cassandraDDLHandler.getInstance().transactionColumns.deleteValues + ",''," + statement.txObject.getTransactionId() +')',
+				[],
+				statement,
+				this.dummyCallback,
+				this,
+				txObject);
+		logger.debug('inserted tx record on table ' + statement.table);
+	}
+	
 	this.updateTxRecord=function(statement,txObject){
 		logger.debug('inserting tx record on table ' + statement.table);
 		var columnClause = '';
@@ -104,6 +134,8 @@ module.exports = {
 						handler.updateTransactional(cql,txObject);
 					}else if (sqlStrUtility.SqlStrUtility().isInsert(cql)){
 						handler.insertTransactional(cql,txObject);
+					}else if (sqlStrUtility.SqlStrUtility().isDelete(cql)){
+						handler.deleteTransactional(cql,txObject);
 					} 
 					
 				}
