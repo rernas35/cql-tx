@@ -59,13 +59,13 @@ function CassandraDDLHandler(){
 		this.execute('insert into TX_TABLES(table_id,creation_date,table_name, status) values(uuid(),dateof(now()),\'?\',?)',
 				[statement.table,1],statement,this.dummyCallback,this);
 		
-		logger.debug("Retrieving metadata for " + statement.table);
+		logger.debug(statement.txObject,"Retrieving metadata for " + statement.table);
 		this.execute("SELECT * FROM system.schema_columns where keyspace_name = 'mykeyspace' and columnfamily_name = '"+ statement.table +"'",
 				[],
 				statement,
 				this.createTxTable,
 				this);
-		logger.debug("Retrieving metadata for " + statement.table);
+		logger.debug(statement.txObject,"Retrieving metadata for " + statement.table);
 		
 		
 	};
@@ -117,13 +117,13 @@ function CassandraDDLHandler(){
 	
 	
 	this.callBack4CreateTable=function(rows,statement,thus){
-		logger.debug("Retrieving indexes " + statement.table);
+		logger.debug(statement.txObject,"Retrieving indexes " + statement.table);
 		thus.execute("SELECT * FROM system.schema_columns where keyspace_name = 'mykeyspace' and columnfamily_name = '"+ statement.table +"'",
 				[],
 				statement,
 				thus.createIndex4TxClone,
 				thus);
-		logger.debug("Retrieving indexes for " + statement.table);
+		logger.debug(statement.txObject,"Retrieving indexes for " + statement.table);
 		statement.txObject.txCallback(rows,statement);
 	};
 	
@@ -142,9 +142,9 @@ function CassandraDDLHandler(){
 		rows.forEach(function(c) {
 			logger.info('c.index_name : ' + c.index_name);
 			if (c.index_name != null){
-				logger.debug('Creating index for ' + c.column_name + " on table " + statement.table );
+				logger.debug(statement.txObject,'Creating index for ' + c.column_name + " on table " + statement.table );
 				thus.execute("create index tx_idx_" + c.column_name + " on tx_" + statement.table + "(" + c.column_name + ")",[],statement,thus.dummyCallback,thus);
-				logger.debug('Created index for ' + c.column_name + " on table " + statement.table );
+				logger.debug(statement.txObject,'Created index for ' + c.column_name + " on table " + statement.table );
 			}
 			
 		});
@@ -152,11 +152,11 @@ function CassandraDDLHandler(){
 	};
 	
 	this.dummyCallback=function(rows,statement,thus){	
-		logger.debug("Dummy return from Cassandra DDL");
+		logger.debug(statement.txObject,"Dummy return from Cassandra DDL");
 	};
 	
 	this.checkTableExists=function(statement){
-		logger.debug('Check for table :' + statement.table);
+		logger.debug(statement.txObject,'Check for table :' + statement.table);
 		this.execute('select count(*) as c from TX_TABLES where table_name=\'?\'',
 				[statement.table],
 				statement,
@@ -168,7 +168,7 @@ function CassandraDDLHandler(){
 	
 	this.callback4CheckTableExists=function(rows,statement,thus){
 		if (rows[0].c > 0){
-			logger.debug('table already exists!');
+			logger.debug(statement.txObject,'table already exists!');
 			statement.txObject.txCallback(rows,statement);
 		}else {
 			thus.addTable2TransactionalContext(statement);

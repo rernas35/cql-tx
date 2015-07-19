@@ -3,27 +3,38 @@
  */
 
 var winston = require('winston');
+var config = require("./config");
 winston.emitErrs = true;
 
 var logger = new winston.Logger({
-    transports: [
-        new winston.transports.File({
-            level: 'info',
-            filename: '/data/cqltx/logs/all-logs.log',
-            handleExceptions: true,
-            json: true,
-            maxsize: 5242880, //5MB
-            maxFiles: 5,
-            colorize: false
-        }),
-        new winston.transports.Console({
-            level: 'debug',
-            handleExceptions: true,
-            json: false,
-            colorize: true
-        })
-    ],
+    transports:config.winstonTransports(winston),
     exitOnError: false
 });
 
-module.exports = logger;
+var cqltxLogger =  { debug : function(txObject,str){
+	if (txObject == undefined)
+		logger.debug(str);
+	else 
+		logger.debug('[' + txObject.getTransactionId() + ']' + str);
+	},
+	info : function(txObject,str){
+		if (txObject == undefined)
+			logger.info(str);
+		else 
+			logger.info('[' + txObject.getTransactionId() + ']' + str);
+	},
+	error : function(txObject,str){
+		if (txObject == undefined)
+			logger.error(str);
+		else 
+			logger.error('[' + txObject.getTransactionId() + ']' + str);
+	},
+	warn : function(txObject,str){
+		if (txObject == undefined)
+			logger.warn(str);
+		else 
+			logger.warn('[' + txObject.getTransactionId() + ']' + str);
+	}
+};
+
+module.exports = cqltxLogger;

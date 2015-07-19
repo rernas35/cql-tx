@@ -61,8 +61,6 @@ function SqlUtility() {
 
 
 	function getInsertKeyValues(columns, values) {
-		logger.debug("columns : " + columns);
-		logger.debug("values : " + values);
 		var retArray = [];
 		var carray = columns.split(',');
 		var varray = values.split(',');
@@ -79,7 +77,6 @@ function SqlUtility() {
 		for (keyValueIndex=0;keyValueIndex<keyValueArray.length;keyValueIndex++){
 			var entry = keyValueArray[keyValueIndex];
 			if (entry.value == '?'){
-				logger.debug('parameters[parameterIndex] : '  +  parameters[parameterIndex])
 				entry.setValue(parameters[parameterIndex]);
 				parameterIndex++;
 			}

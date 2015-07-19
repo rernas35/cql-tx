@@ -27,7 +27,7 @@ function CassandraDMLHandler(){
 	}
 
 	this.deleteTxRecord=function(statement,txObject){
-		logger.debug('inserting tx record on table ' + statement.table);
+		logger.debug(txObject,'inserting tx record on table ' + statement.table);
 		var columnClause = '';
 		var valueClause = '';
 		for (var i=0; i<statement.columns.length;i++){
@@ -47,11 +47,11 @@ function CassandraDMLHandler(){
 				this.dummyCallback,
 				this,
 				txObject);
-		logger.debug('inserted tx record on table ' + statement.table);
+		logger.debug(txObject,'inserted tx record on table ' + statement.table);
 	}
 	
 	this.updateTxRecord=function(statement,txObject){
-		logger.debug('inserting tx record on table ' + statement.table);
+		logger.debug(txObject,'inserting tx record on table ' + statement.table);
 		var columnClause = '';
 		var valueClause = '';
 		for (var i=0; i<statement.columns.length;i++){
@@ -78,7 +78,7 @@ function CassandraDMLHandler(){
 				this.dummyCallback,
 				this,
 				txObject);
-		logger.debug('inserted tx record on table ' + statement.table);
+		logger.debug(txObject,'inserted tx record on table ' + statement.table);
 	}
 	
 	this.insertTransactional=function(cql,txObject){
@@ -88,7 +88,7 @@ function CassandraDMLHandler(){
 	}
 	
 	this.insertTxRecord=function(statement,txObject){
-		logger.debug('inserting tx record on table ' + statement.table);
+		logger.debug(txObject,'inserting tx record on table ' + statement.table);
 		var columnClause = '';
 		var valueClause = '';
 		for (var i=0; i<statement.columns.length;i++){
@@ -107,11 +107,11 @@ function CassandraDMLHandler(){
 				this.dummyCallback,
 				this,
 				txObject);
-		logger.debug('inserted tx record on table ' + statement.table);
+		logger.debug(txObject,'inserted tx record on table ' + statement.table);
 	}
 	
 	this.dummyCallback=function(rows,statement,thus,txObject){	
-		logger.debug("Dummy return from Cassandra DML");
+		logger.debug(txObject,"Dummy return from Cassandra DML");
 		txObject.txCallback(rows, statement);
 	};
 	

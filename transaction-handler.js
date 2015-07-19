@@ -59,10 +59,12 @@ function TransactionHandler(){
 	this.retrieveSessionIdCallback=function(rows,statement,txObject){
 		if (rows[0].e > 0){
 			var callbackImpl = txObject.txCallback;
+			var errCallbackImpl = txObject.errCallback;
 			txObject.txCallback=function(rows, statement){
-				logger.debug("execute transactional DDL has worked....");
+				logger.debug(txObject,"execute transactional DDL has worked....");
 				var txObject4dml = new TxObject(txObject.getTransactionId(),txObject.getCql());
 				txObject4dml.txCallback=callbackImpl;
+				txObject4dml.errCallback=errCallbackImpl;
 				dmlHandler.getInstance().executeTransactional(txObject4dml.getCql(),txObject4dml);
 			}
 			ddlHandler.getInstance().process4Metadata(txObject.getCql(),txObject);
@@ -129,7 +131,7 @@ function TransactionHandler(){
 	};
 	
 	this.dummyCallback=function(rows,statement,thus){	
-		logger.debug("Dummy return from Cassandra Transaction");
+		logger.debug(txObject,"Dummy return from Cassandra Transaction");
 	};
 	
 }
