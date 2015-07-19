@@ -87,7 +87,7 @@ function CassandraDDLHandler(){
 			} 
 		}
 		
-		primaryKeyClause = 'primary key(trx_id)';
+		primaryKeyClause = 'primary key(trx_id,' + partitionKeyClause +')';
 //		primaryKeyClause = 'primary key(' + partitionKeyClause;
 //		if (clusteringKeyClause != ''){
 //			primaryKeyClause += ',' + clusteringKeyClause;
