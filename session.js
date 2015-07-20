@@ -113,7 +113,7 @@ function Session(txObj) {
 		var boundCallback = this.root.commitTransactionStatusUpdateCallback.bind(this);
 //		cassandraBase.getInstance().execute1('update TX_TRANSACTIONS set status=' + sessionStatus + ' where txid = ?',[this.root.txObject.getTransactionId()],null,boundCallback,this.root.txObject);
 		cassandraBase.getInstance().execute1('insert into TX_COMPLETED_TRANSACTIONS(txId,start_date,status) values(?,dateof(now()),?)',[this.root.txObject.getTransactionId(),sessionStatus],null,boundCallback,this.root.txObject);
-		cassandraBase.getInstance().execute1('delete from TX_TRANSACTIONS where txid = ?',[this.root.txObject.getTransactionId()],null,new function(){},this.root.txObject);
+		cassandraBase.getInstance().execute1('delete from TX_TRANSACTIONS where txid = ?',[this.root.txObject.getTransactionId()],null,function(){},this.root.txObject);
 	}
 	
 	this.commitTransactionStatusUpdateCallback=function(rows,statement,txObject){
