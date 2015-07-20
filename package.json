@@ -33,6 +33,7 @@
 	  "winston" : "0.9.x",
 	  "cassandra-driver" : "2.x.x",
 	  "restify" : "3.x.x",
-	  "ws" : "0.4.x"
+	  "ws" : "0.4.x",
+	  "moment" : "2.10.x"  
   }
 }

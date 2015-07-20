@@ -7,6 +7,7 @@ var config = {
 		websocketPort : 8081,
 		trxClearanceIntervalInMins : 10,
 		cassandraClient : {contactPoints: ['127.0.0.1'], keyspace: 'mykeyspace'},
+		timezone : '+0300',
 		winstonTransports : function(winston){
 							return [
 		                      new winston.transports.File({

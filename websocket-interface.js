@@ -21,7 +21,6 @@ function initWebSocketServer(){
 			txInstance.openTransaction(function() {
 				var response = initializeSuccesfulResponse();
 				response.txId = this.getTransactionId() + '';
-				console.log('this.sessionId : %s', this.sessionId);
 				ws.send(JSON.stringify(response));
 				console.log('resp : %s', JSON.stringify(response));
 			},
