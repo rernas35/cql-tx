@@ -35,7 +35,7 @@ function clearOpenSessionsCallback(rows){
 function updateCallback(){
 	logger.info("Session check finished.");
 }
-setInterval(clearOpenSessions,(5000));
+
 
 module.exports = {
 		schedule : function(){
