@@ -8,7 +8,7 @@ var logger = require("./logger");
  * TX-tables : TX_TABLES , TX_COLUMNS ,
  * 
  *  TX_TABLES: table_id, table_name,  creation_date, status
- *  create table TX_TABLES (table_id UUID primary key,table_name text,creation_date timestamp, status int);
+ *  create table TX_TABLES (table_name text primary key,creation_date timestamp, status int);
  *  create index table_name on tx_tables(table_name);
  *  TX_COLUMNS : column_id, table_id, type, creation_date, modification_date,  status
  *  create table TX_COLUMNS (table_name text,column_name text,column_type text, is_indexed boolean,key_type text,primary key (table_name,column_name));
@@ -56,7 +56,7 @@ function CassandraDDLHandler(){
 	
 	this.addTable2TransactionalContext=function(statement){
 		
-		this.execute('insert into TX_TABLES(table_id,creation_date,table_name, status) values(uuid(),dateof(now()),\'?\',?)',
+		this.execute('insert into TX_TABLES(creation_date,table_name, status) values(dateof(now()),\'?\',?)',
 				[statement.table,1],statement,this.dummyCallback,this);
 		
 		logger.debug(statement.txObject,"Retrieving metadata for " + statement.table);
@@ -78,7 +78,10 @@ function CassandraDDLHandler(){
 			c = rows[i];
 			columnsClause += c.column_name + ' ' + thus.getType(c.validator) + ',' ;
 			if (c.type == 'partition_key'){
-				partitionKeyClause = c.column_name;
+				if (partitionKeyClause != ''){
+					partitionKeyClause += ',';
+				}
+				partitionKeyClause += c.column_name;
 			}else if (c.type == 'clustering_key'){
 				if (clusteringKeyClause != ''){
 					clusteringKeyClause += ',';
@@ -87,12 +90,17 @@ function CassandraDDLHandler(){
 			} 
 		}
 		
-		primaryKeyClause = 'primary key(trx_id,' + partitionKeyClause +')';
-//		primaryKeyClause = 'primary key(' + partitionKeyClause;
-//		if (clusteringKeyClause != ''){
-//			primaryKeyClause += ',' + clusteringKeyClause;
-//		}
-//		primaryKeyClause += ')'; 
+		primaryKeyClause = 'primary key(trx_id,';
+//		if (partitionKeyClause.indexOf(",") > -1)
+//			primaryKeyClause += "(";
+		primaryKeyClause += partitionKeyClause ;
+//		if (partitionKeyClause.indexOf(",") > -1)
+//			primaryKeyClause += ")";
+		if (clusteringKeyClause != ''){
+			primaryKeyClause += ',' + clusteringKeyClause;
+		}
+		primaryKeyClause += ')'; 
+		 
 	
 		thus.execute('create table tx_'+ statement.table +'('+columnsClause + thus.additionalColumns.generateAddtionalColumnsDDL() + ',' + primaryKeyClause +')',
 				[],statement,thus.callBack4CreateTable,thus);
@@ -140,8 +148,8 @@ function CassandraDDLHandler(){
 	
 	this.createIndex4TxClone=function(rows,statement,thus){
 		rows.forEach(function(c) {
-			logger.info('c.index_name : ' + c.index_name);
 			if (c.index_name != null){
+				logger.info('c.index_name : ' + c.index_name);
 				logger.debug(statement.txObject,'Creating index for ' + c.column_name + " on table " + statement.table );
 				thus.execute("create index tx_idx_" + c.column_name + " on tx_" + statement.table + "(" + c.column_name + ")",[],statement,thus.dummyCallback,thus);
 				logger.debug(statement.txObject,'Created index for ' + c.column_name + " on table " + statement.table );
