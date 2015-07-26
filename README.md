@@ -39,6 +39,9 @@ var config = {
 - For transaction tables , execute init.js ;
 	node init.js
 
+- Start cql-tx ;
+	npm start cql-tx
+
 - For testing create the following user table ; 
 ```sql
 	create table users(fname text,lname text,user_id bigint,primary key (user_id));
