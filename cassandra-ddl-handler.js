@@ -3,6 +3,7 @@ var async = require('async');
 var sqlStrUtility = require('./sql-str-utility');
 var cassandraBase = require('./cassandra-base');
 var logger = require("./logger");
+var config = require("./config");
 
 /*
  * TX-tables : TX_TABLES , TX_COLUMNS ,
@@ -60,7 +61,7 @@ function CassandraDDLHandler(){
 				[statement.table,1],statement,this.dummyCallback,this);
 		
 		logger.debug(statement.txObject,"Retrieving metadata for " + statement.table);
-		this.execute("SELECT * FROM system.schema_columns where keyspace_name = 'mykeyspace' and columnfamily_name = '"+ statement.table +"'",
+		this.execute("SELECT * FROM system.schema_columns where keyspace_name = '"+config.keyspace +"' and columnfamily_name = '"+ statement.table +"'",
 				[],
 				statement,
 				this.createTxTable,
@@ -126,7 +127,7 @@ function CassandraDDLHandler(){
 	
 	this.callBack4CreateTable=function(rows,statement,thus){
 		logger.debug(statement.txObject,"Retrieving indexes " + statement.table);
-		thus.execute("SELECT * FROM system.schema_columns where keyspace_name = 'mykeyspace' and columnfamily_name = '"+ statement.table +"'",
+		thus.execute("SELECT * FROM system.schema_columns where keyspace_name = '"+config.keyspace +"' and columnfamily_name = '"+ statement.table +"'",
 				[],
 				statement,
 				thus.createIndex4TxClone,
