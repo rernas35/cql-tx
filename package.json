@@ -1,6 +1,6 @@
 {
   "name": "cql-tx",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "Transactional Layer For Apache Cassandra ",
   "main": "main.js",
   "scripts": {
