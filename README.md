@@ -37,10 +37,14 @@ var config = {
 ```
 
 - For transaction tables , execute init.js ;
+```bashscript
 	node init.js
+```
 
-- Start cql-tx ;
+- Start cql-tx (rest server will start listening 8080 port , defined on config js) ;
+```bashscript
 	npm start cql-tx
+```
 
 - For testing create the following user table ; 
 ```sql
